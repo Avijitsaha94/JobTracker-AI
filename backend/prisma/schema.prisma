@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  passwordHash  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  applications  Application[]
+  resumes       Resume[]
+  notifications Notification[]
+}
+enum ApplicationStatus {
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+model Application {
+  id                 String              @id @default(cuid())
+  companyName        String
+  position           String
+  salaryRange        String?
+  jobLink            String?
+  source             String?
+  status             ApplicationStatus   @default(APPLIED)
+  appliedDate        DateTime            @default(now())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  userId             String
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  notes              Note[]
+  interviewSchedule  InterviewSchedule?
+  matchResults       MatchResult[]
+}
+model Resume {
+  id               String   @id @default(cuid())
+  fileUrl          String
+  versionNumber    Int      @default(1)
+  parsedSkills     String[]
+  parsedExperience String?
+  parsedEducation  String?
+  uploadedAt       DateTime @default(now())
+
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  matchResults     MatchResult[]
+}
+
+model Note {
+  id            String      @id @default(cuid())
+  content       String
+  createdAt     DateTime    @default(now())
+
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model InterviewSchedule {
+  id             String      @id @default(cuid())
+  interviewDate  DateTime
+  reminderSent   Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  applicationId  String      @unique
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model MatchResult {
+  id             String      @id @default(cuid())
+  matchScore     Int
+  missingSkills  String[]
+  suggestions    String?
+  createdAt      DateTime    @default(now())
+
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  resumeId       String
+  resume         Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  INTERVIEW_REMINDER
+  FOLLOW_UP
+  GENERAL
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  type      NotificationType
+  content   String
+  isRead    Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
