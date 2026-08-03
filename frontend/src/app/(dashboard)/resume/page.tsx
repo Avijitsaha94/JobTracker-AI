@@ -47,9 +47,9 @@ export default function ResumePage() {
     <div className="mx-auto max-w-2xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Resume</h1>
-        <p className="text-muted-foreground">
-          Upload your resume to get AI-powered job match scores
-        </p>
+        <p className="text-muted-foreground"> 
+          Upload your resume to get AI-powered job Match Scores 
+                  </p>
       </div>
 
       <ResumeUpload onUploadSuccess={handleUploadSuccess} />
